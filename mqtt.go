@@ -2,6 +2,8 @@ package mqtt
 
 import (
 	"github.com/eclipse/paho.mqtt.golang"
+	"errors"
+	"time"
 )
 
 
@@ -27,10 +29,18 @@ func createMqttClient(brokerAddress string, clientName string) mqtt.Client{
 }
 
 func connectToClient(client mqtt.Client) error {
-	if token := client.Connect(); token.Wait() && token.Error() != nil{
-		return token.Error()
+	var err = errors.New("")
+
+	for i:=0; i<10; i++ {
+		token := client.Connect()
+		if token.Wait() && token.Error() != nil{
+			err = token.Error()
+			time.Sleep(time.Second)
+			continue
+		}
+		return nil
 	}
-	return nil
+	return err
 }
 
 func (mqttClient Mqtt) SubscribeToTopic(topic string, callback func(msg Message)) error {
