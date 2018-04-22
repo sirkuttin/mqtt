@@ -8,7 +8,7 @@ import (
 
 
 type Client struct {
-	client mqtt.Client
+	mqtt.Client
 }
 
 type Message struct {
@@ -19,7 +19,7 @@ type Message struct {
 func New(brokerAddress string, clientName string) (mqttClient Client, err error) {
 	client := createMqttClient(brokerAddress, clientName)
 	err = connectToClient(client)
-	mqttClient =  Client{client:client}
+	mqttClient =  Client{client}
 	return
 }
 
@@ -44,7 +44,7 @@ func connectToClient(client mqtt.Client) error {
 }
 
 func (mqttClient Client) SubscribeToTopic(topic string, callback func(msg Message)) error {
-	token := mqttClient.client.Subscribe(topic, 0, func(client mqtt.Client, message mqtt.Message) {
+	token := mqttClient.Subscribe(topic, 0, func(client mqtt.Client, message mqtt.Message) {
 		callback(Message{message.Topic(), message.Payload()})
 	});
 
@@ -55,11 +55,11 @@ func (mqttClient Client) SubscribeToTopic(topic string, callback func(msg Messag
 }
 
 func (mqttClient Client) Disconnect(quiesce uint) {
-	mqttClient.client.Disconnect(quiesce)
+	mqttClient.Disconnect(quiesce)
 }
 
 func (mqttClient Client) PublishToTopic(topic string, data []byte) error{
-	token := mqttClient.client.Publish(topic, 0, false, data);
+	token := mqttClient.Publish(topic, 0, false, data);
 
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
@@ -68,7 +68,7 @@ func (mqttClient Client) PublishToTopic(topic string, data []byte) error{
 }
 
 func (mqttClient Client) PublishStringToTopic(topic string, data string) error{
-	token := mqttClient.client.Publish(topic, 0, false, data);
+	token := mqttClient.Publish(topic, 0, false, data);
 
 	if token.Wait() && token.Error() != nil {
 		return token.Error()
